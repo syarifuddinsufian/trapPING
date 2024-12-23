@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="icon" type="image/x-icon" href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhX-hyf_BGH6GZSQiedvQclDIg2PSeppwUDjsPPmkDXSUoUw66btcn_PWIkR_dKeXKr5cHyxcPq7EhgDjvHEp7OqT6TDOS5Wgm1A3ByBeZgIqA0bgDdh-bm41asV4QESUQEjB4J52w4UrtAjsLzQNeyOwJS7TZRlJo36ozkPQElc0zKqsQm8ok6HGGQ5AZx/s320/icon-circle.png">
+    <link href='https://fonts.googleapis.com/css?family=Orbitron' rel='stylesheet'>
+    <title>TrapPING Maps</title>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBISEaYAOAm7_4X9ZZJ3twvJ37HADnQub0&callback=initMap&libraries=places&v=beta"></script>
+    <style>
+      #map {
+        height: calc(100% - 80px); /* Adjust height to accommodate header */
+      }
+
+      html,
+      body {
+        height: 100%; /* Ensures the page fills the screen */
+        margin: 0;
+        padding: 0;
+      }
+
+      header {
+        height: 80px; /* Header height */
+        background-color: #f8f9fa; /* Light gray background for the header */
+        display: flex;
+        align-items: center;
+        padding-left: 20px; /* Left padding for spacing */
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        font-family: 'Orbitron';font-size: 30px;
+        font-weight:bolder;
+        color: #0c496fff;
+        gap: 20px;
+      }
+
+      header img {
+        height: 60px; /* Logo height */
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <img
+        src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhlHYfFQNBidCsSOG-UOHFkVSfrjicYGHwTByAS8ALghuBR0uvsqDkcOxGezr4yEr5jM_9unMTSqxEzM6j3Zwg3cAyYa498tSrdjtlpmfmNkW2hJamGtUAUgv8de0Kp6Sws-14WQGsj6mJ38Gzvr1776bi9aLwaRHqHBsM5KZ-Ofkh_JayEo_HeTiY4-hRZ/s320/logo-2.png"
+        alt="Logo"
+      />
+      Advanced Wildlife Cage Location & Status Tracking
+    </header>
+    <div id="map"></div> <!-- Map container -->
+
+    <script>
+      // Initialize the map
+      function initMap() {
+        // Coordinates of the markers
+        const markersPositions = [
+          { lat: 4.387, lng: 100.968 },
+          { lat: 4.374359, lng: 100.969904 },
+          { lat: 4.387583, lng: 100.979301 },
+          { lat: 4.384, lng: 100.970 },
+          { lat: 4.390, lng: 100.972 },
+        ];
+
+        // Calculate center from all markers
+        const center = getCenter(markersPositions);
+
+        // Map options
+        const mapOptions = {
+          center: center,
+          zoom: 15,
+          mapTypeId: "satellite",
+        };
+
+        // Create the map
+        const map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+        // Function to get user's current location and place a marker
+        function showUserLocation() {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              function (position) {
+                const userPosition = {
+                  lat: position.coords.latitude,
+                  lng: position.coords.longitude,
+                };
+
+                new google.maps.Marker({
+                  position: userPosition,
+                  map: map,
+                  title: "Your Location",
+                  icon: {
+                    url: "https://cdn-icons-png.flaticon.com/512/6747/6747195.png",
+                    scaledSize: new google.maps.Size(50, 50),
+                  },
+                });
+              },
+              function () {
+                console.error("Geolocation failed or permission denied.");
+              }
+            );
+          } else {
+            console.error("Geolocation is not supported by this browser.");
+          }
+        }
+
+        // Add user location marker
+        showUserLocation();
+
+        // Create a single InfoWindow instance
+        const infoWindow = new google.maps.InfoWindow();
+
+        // Loop through each marker position and add markers to the map
+        markersPositions.forEach((position, index) => {
+          const marker = new google.maps.Marker({
+            position: position,
+            map: map,
+            title: `CAGE ${index + 1}`,
+            icon: {
+              url: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgCaq9MP6Rn9z11cUZ68lGzZNo58UnuGaCdgIEX5hHtcO4qGTHVqBRoqTbCPgj0oz00xRz0lUoUrYYOBJCZ3TD8iZkaM_GcXjyNAgahKIDDoea50B2NagVtqNPvAFMOzU5P0es3R8pPb2rj3pjA6n_zJPsK4iuCAxEfBQ9QX2RoARGC2uQqlbPERhfatP1k/s320/icon-square-red.png",
+              scaledSize: new google.maps.Size(40, 40),
+            },
+          });
+
+          // Info window content for each marker
+          const infoWindowContent = `
+            <div style="font-weight: bold;">CAGE ${index + 1}</div>
+            <p>Location of Cage ${index + 1}.</p>
+          `;
+
+          // Add event listeners for hover
+          marker.addListener("mouseover", function () {
+            infoWindow.setContent(infoWindowContent);
+            infoWindow.open(map, marker);
+          });
+
+          marker.addListener("mouseout", function () {
+            infoWindow.close();
+          });
+
+          // Redirect to Google Maps when the marker is clicked
+          marker.addListener("click", function () {
+            const googleMapsUrl = `https://www.google.com/maps/place/${position.lat},${position.lng}`;
+            window.open(googleMapsUrl, "_blank");
+          });
+        });
+      }
+
+      // Function to calculate the center point from multiple positions
+      function getCenter(positions) {
+        let latSum = 0;
+        let lngSum = 0;
+
+        // Sum up all latitudes and longitudes
+        positions.forEach((pos) => {
+          latSum += pos.lat;
+          lngSum += pos.lng;
+        });
+
+        // Calculate average
+        const lat = latSum / positions.length;
+        const lng = lngSum / positions.length;
+
+        return { lat, lng };
+      }
+    </script>
+  </body>
+</html>
